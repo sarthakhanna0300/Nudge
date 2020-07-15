@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-// const team = require('./teamModel');
 
 const boardSchema = new mongoose.Schema({
   name: {
@@ -23,17 +22,7 @@ const boardSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref:'List'
   }]
-  // ownerId:mongoose.Schema.Types.ObjectId
-  // teamId:{
-  //   type:mongoose.Schema.ObjectId,
-  //       ref:'team'
-  // },
-  // permission:{
-  //   type:Boolean,
-  //   default:false
-  // }
 }) 
-
 
 const Board = mongoose.model('Board', boardSchema);
 
