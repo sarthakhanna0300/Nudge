@@ -63,6 +63,7 @@ exports.deleteList = catchAsync(async (req, res,next) => {
   board.lists = board.lists.filter(
     (list) => list!=req.params.listId
   );
+
   await board.save();
   res.status(204).json({
     status: 'success',
