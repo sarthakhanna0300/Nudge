@@ -15,8 +15,11 @@ email: {
   unique: true,
   validate:[validator.isEmail,'Please provide a valid email']
   },
-avatarURL: String,
-password:{ 
+avatarURL: {
+  type: String,
+  default: 'default.jpg'
+  },
+password:{  
   type: String,
   required:[true,'Please provide your password'],
   minlength:8,
@@ -34,7 +37,15 @@ passwordConfirm:{
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
-  passwordResetExpires: Date
+  passwordResetExpires: Date,
+  boards:[{
+    type:mongoose.Schema.ObjectId,
+    ref:'Board'
+  }],
+  admin:{
+    type:Boolean,
+    default:false
+  }
 });
 
 userSchema.pre('save',async function(next){
@@ -43,7 +54,7 @@ userSchema.pre('save',async function(next){
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
-})
+});
 
 userSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew) 
@@ -69,6 +80,6 @@ userSchema.methods.createPasswordResetToken = function() {
   return resetToken;
 };
 
-User = mongoose.model('User',userSchema);
+const User = mongoose.model('User',userSchema);
 
 module.exports =User;

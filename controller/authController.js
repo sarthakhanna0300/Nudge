@@ -5,6 +5,7 @@ const catchAsync = require('./../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 const appError = require('../utils/appError');
 const sendEmail = require('../utils/email');
+const { findById } = require('../models/userModel');
 
 const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -60,12 +61,21 @@ exports.logout = (req, res) => {
   res.status(200).json({ status: 'success' });
 };
 
+exports.isAdmin = catchAsync(async(req,res,next)=>{
+  const user = await User.findById(req.user.id)
+  if(user.admin!==true)
+    {
+        return next(new appError('Not allowed to access this route',401));
+    } 
+  next();
+});
+
 exports.protect =catchAsync(async(req,res,next)=>{
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
   } 
-  else if (req.cookies.jwt) {
+  else if (req.cookies && req.cookies.jwt) {
     token = req.cookies.jwt;
   }
   if (!token) {

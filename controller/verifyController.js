@@ -55,3 +55,12 @@ exports.checkCardinList = catchAsync(async (req,res,next) => {
   }
   next();
 });
+
+exports.checkOwnerinBoard = catchAsync(async (req,res,next) => {
+  const board = await Board.findById(req.params.boardId);
+  if(board.ownerId!=req.user.id)
+  {
+    return next(new appError('This Board  not belongs to You',404));
+  }
+  next();
+});

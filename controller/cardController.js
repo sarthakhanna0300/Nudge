@@ -2,6 +2,14 @@ const Card = require('../models/cardModel')
 const List = require('../models/listModel')
 const catchAsync = require('./../utils/catchAsync');
 
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach(el => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el];
+  });
+  return newObj;
+};
+
 exports.getAllCards = catchAsync(async (req,res,next) => {
   const cards = await Card.find({listId: req.params.listId})
   res.status(200).json({
@@ -42,9 +50,8 @@ exports.createCard = catchAsync(async (req,res,next) => {
 });
 
 exports.updateCard = catchAsync(async (req,res,next) => {
-  const card= await Card.findByIdAndUpdate(req.params.cardId,{
-    text:req.body.text
-  },
+  const filteredBody = filterObj(req.body, 'text', 'order');
+  const card= await Card.findByIdAndUpdate(req.params.cardId,filteredBody,
   {
     new: true,
     runValidators: true

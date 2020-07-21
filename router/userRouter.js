@@ -11,9 +11,12 @@ router.get('/logout',authController.logout);
 
 router.use(authController.protect);
 
-router.patch('/updateMyPassword', authController.updatePassword);
-router.patch('/updateMe', userController.updateMe);
-router.delete('/deleteMe', userController.deleteMe);
+router.patch('/updateMyPassword',authController.updatePassword);
+router.patch('/updateMe',userController.uploadUserPhoto,userController.resizeUserPhoto,userController.updateMe);
+router.delete('/deleteMe',userController.deleteMe);
+router.get('/me',userController.getMe);
+
+router.use(authController.isAdmin);
 
 router
   .route('/')
@@ -21,7 +24,7 @@ router
   .post(userController.createUser);
 
 router
-.route('/:id')
+.route('/:userId')
 .get(userController.getUser)
 .patch(userController.updateUser)
 .delete(userController.deleteUser);

@@ -18,7 +18,6 @@ app.use(mongoSanitize());
 app.use(xss());
 
 app.use(express.static(`${__dirname}/public`));
-
 app.use('/api/v1/boards',boardRouter);
 app.use('/api/v1/users',userRouter);
 

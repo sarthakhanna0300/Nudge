@@ -12,7 +12,7 @@ const boardSchema = new mongoose.Schema({
   },
   imageCover: {
     type: String,
-    default:'white'
+    default:'white.jpg'
   },
   starred:{
     type:Boolean,
@@ -21,8 +21,13 @@ const boardSchema = new mongoose.Schema({
   lists:[{
     type: mongoose.Schema.Types.ObjectId,
     ref:'List'
-  }]
-}) 
+  }],
+  ownerId:{ 
+    type:mongoose.Schema.ObjectId,
+    ref:'User',
+    required:[true,'List must belong to a User']
+  }
+});
 
 const Board = mongoose.model('Board', boardSchema);
 

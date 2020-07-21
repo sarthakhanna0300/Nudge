@@ -1,6 +1,15 @@
 const List = require('../models/listModel');
 const Board = require('../models/boardModel');
+const Card = require('../models/cardModel');
 const catchAsync = require('./../utils/catchAsync');
+
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach(el => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el];
+  });
+  return newObj;
+};
 
 exports.getAllLists = catchAsync(async (req,res,next) => {
   const lists = await List.find({boardId: req.params.boardId});
@@ -42,9 +51,8 @@ exports.createList = catchAsync(async (req,res,next) => {
 });
 
 exports.updateList = catchAsync(async (req,res,next) => {
-  const list= await List.findByIdAndUpdate(req.params.listId,{
-    name:req.body.name
-  }, 
+  const filteredBody = filterObj(req.body, 'name', 'order');
+  const list= await List.findByIdAndUpdate(req.params.listId,filteredBody, 
   {
     new: true,
     runValidators: true
@@ -63,8 +71,8 @@ exports.deleteList = catchAsync(async (req, res,next) => {
   board.lists = board.lists.filter(
     (list) => list!=req.params.listId
   );
-
   await board.save();
+  await Card.deleteMany({listId:req.params.listId});
   res.status(204).json({
     status: 'success',
     data:null
