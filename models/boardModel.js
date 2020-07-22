@@ -25,7 +25,7 @@ const boardSchema = new mongoose.Schema({
   ownerId:{ 
     type:mongoose.Schema.ObjectId,
     ref:'User',
-    required:[true,'List must belong to a User']
+    required:[true,'Board must belong to a User']
   }
 });
 

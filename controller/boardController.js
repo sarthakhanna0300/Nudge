@@ -104,9 +104,9 @@ exports.deleteBoard = catchAsync(async (req, res,next) => {
   user.boards = user.boards.filter(
     (board) => board!=req.params.boardId
   );
-  const currentUser = await User.findByIdAndUpdate(req.user.id,{boards:user.boards});
-  const list = await List.deleteMany({boardId:req.params.boardId});
-  // Delete Card
+  await User.findByIdAndUpdate(req.user.id,{boards:user.boards});
+  await List.deleteMany({boardId:req.params.boardId});
+  await Card.deleteMany({boardId:req.params.boardId});
   res.status(204).json({
     status: 'success',
     data:null

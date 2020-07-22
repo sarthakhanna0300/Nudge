@@ -36,7 +36,9 @@ exports.createCard = catchAsync(async (req,res,next) => {
   const createCard = {
     text: req.body.text,
     order:list.cards.length+1,
-    listId: req.params.listId
+    listId: req.params.listId,
+    boardId: req.params.boardId,
+    ownerId: req.user.id
   };
   const newCard = await Card.create(createCard);
   list.cards.push(newCard);

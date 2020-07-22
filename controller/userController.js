@@ -1,4 +1,7 @@
 const User = require('../models/userModel');
+const Board = require('../models/boardModel');
+const List = require('../models/listModel');
+const Card = require('../models/cardModel');
 const catchAsync = require('./../utils/catchAsync');
 const appError=require('../utils/appError');
 const multer = require('multer');
@@ -88,6 +91,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndDelete(req.user.id);
+  await Board.deleteMany({ownerId:req.user.id}); 
+  await List.deleteMany({ownerId:req.user.id});
+  await Card.deleteMany({ownerId:req.user.id});
   res.status(204).json({
     status: 'success',
     data: null
@@ -105,7 +111,6 @@ exports.getUser = catchAsync(async (req,res,next) => {
 });
 
 exports.createUser = catchAsync(async (req,res,next) => {
-  console.log("1");
   const newUser = await User.create(req.body);
   res.status(201).json({
     status: 'success',  
@@ -130,6 +135,9 @@ exports.updateUser = catchAsync(async (req,res,next) => {
 
 exports.deleteUser = catchAsync(async (req,res,next) => {
   await User.findByIdAndDelete(req.params.userId);
+  await Board.deleteMany({ownerId:req.params.userId}); 
+  await List.deleteMany({ownerId:req.params.userId});
+  await Card.deleteMany({ownerId:req.params.userId});
   res.status(204).json({
     status: 'success',
     data:null

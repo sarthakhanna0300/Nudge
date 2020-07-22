@@ -37,7 +37,8 @@ exports.createList = catchAsync(async (req,res,next) => {
   const createList = {
     name: req.body.name,
     order:board.lists.length+1,
-    boardId: req.params.boardId
+    boardId: req.params.boardId,
+    ownerId: req.user.id
   };
   const newList = await List.create(createList);
   board.lists.push(newList);
