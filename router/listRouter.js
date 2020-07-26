@@ -5,8 +5,8 @@ const cardRouter = require('./cardRouter');
 
 const router =express.Router({mergeParams:true});
 
-router.use(verifyController.checkOwnerinBoard);
 router.use(verifyController.checkBoardExistence);
+router.use(verifyController.checkOwnerinBoard);
 router.use('/:listId/card',cardRouter);
 
 router

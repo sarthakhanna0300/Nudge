@@ -5,6 +5,7 @@ const User = require('../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const multer = require('multer');
 const sharp = require('sharp');
+const appError = require('../utils/appError');
 
 const multerStorage = multer.memoryStorage();
 
@@ -33,7 +34,6 @@ exports.resizeCoverPhoto = catchAsync(async (req, res, next) => {
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
     .toFile(`public/img/boards/${req.file.filename}`);
-
   next();
 });
 
@@ -46,7 +46,7 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 exports.getAllBoards = catchAsync(async (req,res,next) => {
-  const boards = await Board.find({ ownerId: req.user.id });
+  const boards = await Board.find({members: [req.user.id]});
   res.status(200).json({
     status: 'success',
     results: boards.length,
@@ -70,10 +70,10 @@ exports.createBoard = catchAsync(async (req,res,next) => {
   const user = await User.findById(req.user.id);
   const filteredBody = filterObj(req.body, 'name', 'description','imageCover','starred');
   filteredBody.ownerId = req.user.id;
+  var member =[];
+  member.push(req.user.id);
+  filteredBody.members=member;
   const newBoard = await Board.create(filteredBody);
-  user.boards.push(newBoard);
-  newBoardArr=user.boards;
-  const currentUser = await User.findByIdAndUpdate(req.user.id,{boards:newBoardArr});
   res.status(201).json({
     status: 'success',  
     data: {
@@ -99,16 +99,73 @@ exports.updateBoard = catchAsync(async (req,res,next) => {
 });
 
 exports.deleteBoard = catchAsync(async (req, res,next) => {
-  const user = await User.findById(req.user.id);
-  await Board.findByIdAndDelete(req.params.boardId); 
-  user.boards = user.boards.filter(
-    (board) => board!=req.params.boardId
-  );
-  await User.findByIdAndUpdate(req.user.id,{boards:user.boards});
+  board = await Board.findById(req.params.boardId);
+  if(req.user.id!=board.ownerId)
+    {
+      return next(new appError('Only Owner is allowed to delete the board',404));
+    }
+  await Board.findByIdAndDelete(req.params.boardId);  
   await List.deleteMany({boardId:req.params.boardId});
   await Card.deleteMany({boardId:req.params.boardId});
   res.status(204).json({
     status: 'success',
     data:null
   }); 
+});
+
+exports.addMemberToBoard = catchAsync(async (req,res,next) => {
+  const board = await Board.findById(req.params.boardId);
+  if(req.user.id!=board.ownerId)
+  {
+    return next(new appError('Only Owner is allowed to add member to the board',404));
+  }
+  const user = await User.findById(req.params.memberId);
+  if(!user)
+  {
+    return next(new appError('User not found!',404));
+  }
+  var exist = board.members;
+  exist = exist.filter(
+    (member) => member==req.params.memberId
+  );
+  if(exist.length==1)
+  {
+    return next(new appError('User is already present in board member',404));
+  }
+  board.members.push(user);
+  newMembersArr=board.members;
+  await Board.findByIdAndUpdate(req.params.boardId,{members:newMembersArr});
+  res.status(201).json({
+    status: 'success',  
+    data: {
+    board
+    }
+  });
+});
+
+exports.deleteMemberFromBoard = catchAsync(async (req,res,next) => {
+  const board = await Board.findById(req.params.boardId);
+  if(req.user.id!=board.ownerId)
+  {
+    return next(new appError('Only Owner is allowed to delete member from the board',404));
+  }
+  if(req.params.memberId==board.ownerId)
+  {
+    return next(new appError('Owner cannot delete himself/herself from board Members',404));
+  }
+  const user = await User.findById(req.params.memberId);
+  if(!user)
+  {
+    return next(new appError('User not found!',404));
+  }
+  board.members = board.members.filter(
+    (member) => member!=req.params.memberId
+  );
+  await Board.findByIdAndUpdate(req.params.boardId,{members:board.members});
+  res.status(201).json({
+    status: 'success',  
+    data: {
+    board
+    }
+  });
 });

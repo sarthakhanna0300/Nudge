@@ -11,10 +11,8 @@ const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image')) {
-    console.log("0");
     cb(null, true);
   } else {
-    console.log("01");
     cb(new AppError('Not an image! Please upload only images.', 400), false);
   }
 };
@@ -36,7 +34,6 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
     .toFile(`public/img/users/${req.file.filename}`);
-
   next();
 });
 
@@ -60,7 +57,7 @@ exports.getAllUsers = catchAsync(async (req,res,next) => {
 });
 
 exports.getMe = catchAsync(async (req,res,next) => {
-  const user = await User.findById(req.user.id).populate({path:'boards',select:"name"});;
+  const user = await User.findById(req.user.id);
   res.status(200).json({
     status: 'success',
     data:{
@@ -74,7 +71,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     return next(new appError('This route is not for password updates. Please use /updateMyPassword.',400));
   }
   const filteredBody = filterObj(req.body, 'name');
-  console.log("1");
   console.log(req.file);
   if (req.file) filteredBody.avatarURL= req.file.filename; 
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
@@ -90,10 +86,17 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-  await User.findByIdAndDelete(req.user.id);
-  await Board.deleteMany({ownerId:req.user.id}); 
+  const boards = await Board.find({members: [req.user.id]});
+  boards.forEach(async (board) => {
+    board.members=board.members.filter(
+      (member)=>(member)!=req.user.id
+    )
+  await Board.findByIdAndUpdate(board.id,{members:board.members});
+  }); 
+  await Board.deleteMany({ownerId:req.user.id});
   await List.deleteMany({ownerId:req.user.id});
   await Card.deleteMany({ownerId:req.user.id});
+  await User.findByIdAndDelete(req.user.id);
   res.status(204).json({
     status: 'success',
     data: null
@@ -101,7 +104,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = catchAsync(async (req,res,next) => {
-  const user = await User.findById(req.params.userId).populate({path:'lists',select:"name"});
+  const user = await User.findById(req.params.userId);
   res.status(200).json({
     status: 'success',
     data:{

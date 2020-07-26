@@ -8,6 +8,9 @@ const router =express.Router();
 router.use(authController.protect);
 router.use('/:boardId/list',listRouter);
 
+router.patch('/:boardId/addMember/:memberId',verifyController.checkBoardExistence,verifyController.checkOwnerinBoard,boardController.addMemberToBoard);
+router.delete('/:boardId/deleteMember/:memberId',verifyController.checkOwnerinBoard,verifyController.checkBoardExistence,boardController.deleteMemberFromBoard);
+
 router
   .route('/')
   .get(boardController.getAllBoards)
@@ -15,8 +18,8 @@ router
 
 router
   .route('/:boardId')
-  .get(verifyController.checkOwnerinBoard,verifyController.checkBoardExistence,boardController.getBoard)
-  .patch(verifyController.checkOwnerinBoard,verifyController.checkBoardExistence,boardController.uploadCoverPhoto,boardController.resizeCoverPhoto,boardController.updateBoard)
-  .delete(verifyController.checkOwnerinBoard,verifyController.checkBoardExistence,boardController.deleteBoard);
+  .get(verifyController.checkBoardExistence,verifyController.checkOwnerinBoard,boardController.getBoard)
+  .patch(verifyController.checkBoardExistence,verifyController.checkOwnerinBoard,boardController.uploadCoverPhoto,boardController.resizeCoverPhoto,boardController.updateBoard)
+  .delete(verifyController.checkBoardExistence,verifyController.checkOwnerinBoard,boardController.deleteBoard);
 
 module.exports = router;

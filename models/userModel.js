@@ -38,10 +38,6 @@ passwordConfirm:{
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
-  boards:[{
-    type:mongoose.Schema.ObjectId,
-    ref:'Board'
-  }],
   admin:{
     type:Boolean,
     default:false

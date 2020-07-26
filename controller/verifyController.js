@@ -48,7 +48,6 @@ exports.checkCardinList = catchAsync(async (req,res,next) => {
   const exist  = list.cards.filter(
     (card) => card==req.params.cardId
   );
-  console.log(exist);
   if(exist.length==0)
   {
     return next(new appError('This Card belongs to other List',404));
@@ -58,7 +57,10 @@ exports.checkCardinList = catchAsync(async (req,res,next) => {
 
 exports.checkOwnerinBoard = catchAsync(async (req,res,next) => {
   const board = await Board.findById(req.params.boardId);
-  if(board.ownerId!=req.user.id)
+  const exist  = board.members.filter(
+    (member) => member==req.user.id
+  );
+  if(exist.length==0)
   {
     return next(new appError('This Board  not belongs to You',404));
   }
